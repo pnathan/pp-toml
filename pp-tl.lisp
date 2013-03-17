@@ -1,3 +1,9 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; paul's parser for tom's own minimal language
+;;;;
+;;;; (C) 2013 Paul Nathan
+;;;; License: LLGPL (http://opensource.franz.com/preamble.html)
+
 (ql:quickload :esrap)
 (ql:quickload :parse-number)
 (ql:quickload :alexandria)

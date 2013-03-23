@@ -189,10 +189,11 @@
 
 
 (defun strip-comments (string)
-
-  ;; remove the # comments
-  ;; "" is the usual string denoter.
-  )
+  ;; regex contributed by geekosaur
+  (cl-ppcre:regex-replace
+   "^(([^#\"]|\"(([^\\\"]*\\.)*[^\\\"]*\"))+)#.*$"
+   string
+   "\\1"))
 
 (defrule preamble (* keyvalue))
 

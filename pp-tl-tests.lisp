@@ -48,7 +48,36 @@ billy = 1
 ")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(test comment-tests
+  (let ((basic "Foooo"))
+    (is (string= basic
+                 (strip-comments basic))))
+  (let ((input "Hi #comment")
+        (expected "Hi "))
+    (is (string= expected
+                 (strip-comments input))))
+  (let ((input "\"With #comment\"")
+        (expected "\"With #comment\"" ))
+    (is (string= expected
+                 (strip-comments input))))
+  (let ((input "\"With #comment\" #trailing")
+        (expected "\"With #comment\" " ))
+    (is (string= expected
+                 (strip-comments input))))
+  ;; Let's go hardmode
+  (let ((input "\"With #comment\" #trailing #comment")
+        (expected "\"With #comment\" " ))
+    (is (string= expected
+                 (strip-comments input))))
 
+  ;; Challenge mode accepted
+  (let ((input "\"With #comment\" #A trailing \"str # ing\" here")
+        (expected "\"With #comment\" " ))
+    (is (string= expected
+                 (strip-comments input))))
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (test parse-tests
 
   (is

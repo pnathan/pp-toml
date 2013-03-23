@@ -4,14 +4,42 @@
 ;;;; (C) 2013 Paul Nathan
 ;;;; License: LLGPL (http://opensource.franz.com/preamble.html)
 
+(defpackage :pp-toml
+  (:use
+   :common-lisp)
+  (:export
+   ;; entry point for world
+   :parse-file
+
+   ;; testing entry points
+   :not-special-case
+   :datetime
+   :whitespace
+   :alphanumericp
+   :string-char
+   :keygroup-char
+   :normal-key
+   :string
+   :number
+   :bool
+   :array-contents
+   :array
+   :value
+   :end-of-information
+   :keyvalue
+   :keygroup
+   :preamble
+   :file-grammar
+   :strip-comments))
+(in-package :pp-toml)
+
+
 (ql:quickload :esrap)
 (ql:quickload '(:parse-number
                 :alexandria
                 :cl-ppcre
                 :local-time))
 (use-package :esrap)
-
-
 
 (defun not-doublequote (char)
   (not (eql #\" char)))
@@ -137,6 +165,7 @@
 (defrule end-of-information (and (* (or #\Space #\tab))
                                  #\Newline)
   (:constant :ws))
+
 (defrule keyvalue
     (and (? whitespace)
          normal-key
@@ -145,17 +174,11 @@
          (? whitespace)
          value
          end-of-information)
-  (:destructure (w1 key w2 e1 w3 value w4 w5)
+  (:destructure (w1 key w2 e1 w3 value w4)
     (declare (ignore w1 w2 e1 w3 w4))
     (list
      :keyvalue
      key value)))
-
-(parse 'keyvalue "title = \"TOML Example\"
-" )
-(parse 'keyvalue "
-title = \"TOML Example\"
-" )
 
 (defrule keygroup
     (and (? whitespace) #\[ (+ keygroup-char) #\] (? whitespace))
@@ -163,11 +186,6 @@ title = \"TOML Example\"
     (declare (ignore _1 _2 _3 _4))
     (list :header
           (text name))))
-
-(parse 'keygroup "[foo.bar]
-")
-(parse 'keygroup "[foo]
-")
 
 
 (defun strip-comments (string)
@@ -188,44 +206,3 @@ title = \"TOML Example\"
 
 (defun parse-file (string)
   (parse 'file-grammar string))
-
-(parse 'preamble
- "title = \"TOML Example\"
-bunco = false
-billy = 1
-")
-
-(parse-file "title = \"TOML Example\"
-[foo]
-baffle = 1
-binky=true
-blaq=\"beautiful\"
-")
-
-(parse-file
-"
-title = \"TOML Example\"
-
-[owner]
-name = \"Tom Preston-Werner\"
-organization = \"GitHub\"
-bio = \"GitHub Cofounder & CEO\nLikes tater tots and beer.\"
-dob = 1979-05-27T07:32:00Z # First class dates? Why not?
-
-[database]
-server = \"192.168.1.1\"
-ports = [ 8001, 8001, 8002 ]
-connection_max = 5000
-enabled = true
-
-[servers]
-
-
-  [servers.alpha]
-  ip = \"10.0.0.1\"
-  dc = \"eqdc10\"
-
-  [servers.beta]
-  ip = \"10.0.0.2\"
-  dc = \"eqdc10\"
-")

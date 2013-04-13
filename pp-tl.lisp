@@ -86,7 +86,7 @@
     (alphanumericp character))
 
 (defrule string-char
-    (or (not-doublequote character) (and #\\ #\")))
+    (or (not-doublequote character) (and #\\ #\')))
 
 (defrule keygroup-char
     (or (not-bracket character) #\. ))
@@ -96,12 +96,41 @@
   (:text
     list))
 
-(defrule string (and #\" (* string-char) #\")
+(defun transliterate-to-specials (string)
+
+  (flet ((tr (target repl)
+           (setf string (cl-ppcre:regex-replace-all (cl-ppcre:quote-meta-chars
+                                                     target)
+                                                    string
+                                                    (string repl)))))
+    ;; alpha sorted
+    (tr "\\b" #\Backspace)
+    (tr "\\f" #\Form)
+    (tr "\\n" #\Linefeed)
+    (tr "\\r" #\Return)
+    (tr "\\t" #\Tab)
+
+ ;   (tr "\\\"" #\")
+    (tr "\/" #\/)
+    (tr "\\\\" #\\)))
+
+(defrule string-contents (* (or (and "\\" "\"")
+                                string-char
+                                ))
+   (:lambda (s)
+     (format nil "~{~c~}"
+             (loop for var in s collect
+                                (if (listp var)
+                                    #\"
+                                    var)))))
+
+(defrule string (and #\" string-contents #\")
   (:destructure (q1 string q2)
     (declare (ignore q1 q2))
     (list
      :string
-     (text string))))
+     (transliterate-to-specials
+      (text string)))))
 
 
 (defrule number (and (? "-" ) (and
@@ -155,11 +184,11 @@
 
 (defrule value
     (or
+     array
+     datetime
      bool
      number
      string
-     datetime
-     array
      ))
 
 (defrule end-of-information (and (* (or #\Space #\tab))

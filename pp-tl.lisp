@@ -249,7 +249,7 @@
 
 
 (defun strip-comments (string)
-  ;; regex contributed by geekosaur
+  ;; regex kindly contributed by geekosaur@irc.freenode.net
   (cl-ppcre:regex-replace
    "^(([^#\"]|\"(([^\\\"]*\\.)*[^\\\"]*\"))+)#.*$"
    string
@@ -268,3 +268,42 @@
 (defun parse-string (string)
   "Returns the toml parsed structure from `string` or :parse-error"
   (parse 'file-grammar string))
+
+(defun extract-lisp-structure (parsed-structure)
+
+  (let ((table (make-hash-table
+                ;; Will be comparing strings for the keys
+                :test #'equal)))
+
+    ;;Pass 1: Get all unheadered keys into a hash table
+    (loop for keyvalue in (first parsed-structure)
+       do (setf (gethash (second keyvalue) table)
+                (third keyvalue)))
+
+    ;; Pass 2: Normalize headers into keyvalues.
+    ;;
+    ;; As partof this pass, duplicate keys are detected and an error
+    ;; is thrown
+    ;;
+    ;; [h1.h2] key1 = t => h1.h2.key1
+    (loop for header in (second parsed-structure)
+       do)
+
+    ;; Pass 3
+    ;; Collapse values from the (:type <stuff>) information.
+
+    ;; Pass 3a.  Arrays are recursively collapsed. Internal values are
+    ;; collapsed. Heterogenously typed arrays are detected and
+    ;; condition raised. This allows us to use Common Lisp arrays.
+
+    ;; Pass 3b.  Non-arrays are collapsed using the internal value
+    ;; code above.
+
+    ;; Break!  At this point: we have a flat Common Lisp hash table,
+    ;; no duplicate keys. Each value is a Lisp value correctly
+    ;; transcribed from the TOML.
+
+    ;; Pass 4. Place the h1.h2.key2 into nested hash tables h1 => h2>
+    ;; key2 => value and remove the h1.h2.key2 key.
+
+    table))

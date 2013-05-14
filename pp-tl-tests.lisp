@@ -147,6 +147,7 @@ dob2 = 2013-10-22T07:32:00Z
                (collect #\X #\X #\" #\Y #\Y))
        (esrap:parse 'value "\"XX\\\"YY\"")))
 
+  ;; Currently failing - the \/ isn't getting translated into /
   (is (equalp (list
                :string
                (collect #\X #\X #\/ #\Y #\Y))
@@ -166,7 +167,7 @@ dob2 = 2013-10-22T07:32:00Z
 (test parse-tests
 
   (is
-   (parse-file "title = \"TOML Example\"
+   (parse-string "title = \"TOML Example\"
 [foo]
 baffle = 1
 binky=true
@@ -175,7 +176,7 @@ blaq=\"beautiful\"
 
 
 
-(parse-file
+(parse-string
 "
 title = \"TOML Example\"
 

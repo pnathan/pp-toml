@@ -4,12 +4,17 @@
 ;;;; (C) 2013 Paul Nathan
 ;;;; License: LLGPL (http://opensource.franz.com/preamble.html)
 
+
+;; Aim is to implement TOML v0.1
+;;
+;; https://github.com/mojombo/toml/blob/master/versions/toml-v0.1.0.md
+
 (defpackage :pp-toml
   (:use
    :common-lisp)
   (:export
    ;; entry point for world
-   :parse-file
+   :parse-string
 
    ;; testing entry points
    :not-special-case
@@ -96,13 +101,37 @@
   (:text
     list))
 
+
+(defun transliterate-unicode (string)
+  (cl-ppcre:regex-replace-all
+   "\\\\u(\\d{4})" string
+   #'(lambda
+         ;; Interface expected by regexp-replace-all
+         (target-string start end match-start match-end reg-starts reg-ends)
+
+       (declare (ignore start end match-start match-end))
+
+       (format t "~a; ~a~&" reg-starts reg-ends)
+
+       (let ((matched-code
+              (subseq target-string
+                      (aref reg-starts 0)
+                      (aref reg-ends 0))))
+         ;; convert the char into a string
+         (string
+         ;;convert the integer to the code character
+          (code-char
+           ;; convert the string to an integer
+           (parse-integer matched-code)))))))
+
 (defun transliterate-to-specials (string)
 
   (flet ((tr (target repl)
-           (setf string (cl-ppcre:regex-replace-all (cl-ppcre:quote-meta-chars
-                                                     target)
-                                                    string
-                                                    (string repl)))))
+           (setf string (cl-ppcre:regex-replace-all
+                         (cl-ppcre:quote-meta-chars
+                          target)
+                         string
+                         (string repl)))))
     ;; alpha sorted
     (tr "\\b" #\Backspace)
     (tr "\\f" #\Form)
@@ -110,7 +139,8 @@
     (tr "\\r" #\Return)
     (tr "\\t" #\Tab)
 
- ;   (tr "\\\"" #\")
+    ;; todo: determine why this is commented out
+    ;;   (tr "\\\"" #\")
     (tr "\/" #\/)
     (tr "\\\\" #\\)))
 
@@ -130,7 +160,8 @@
     (list
      :string
      (transliterate-to-specials
-      (text string)))))
+      (transliterate-unicode
+       (text string))))))
 
 
 (defrule number (and (? "-" ) (and
@@ -234,5 +265,6 @@
                            (+ keyvalue)
                            ))))
 
-(defun parse-file (string)
+(defun parse-string (string)
+  "Returns the toml parsed structure from `string` or :parse-error"
   (parse 'file-grammar string))

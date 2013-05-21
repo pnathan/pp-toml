@@ -248,10 +248,18 @@
           (text name))))
 
 
+(defparameter *comment-scanner*
+  (cl-ppcre:create-scanner
+   ;; initial regex kindly contributed by geekosaur@irc.freenode.net
+   "^(([^#\"]|\"(([^\\\"]*\\.)*[^\\\"]*\"))+)?#(.*)$"
+   :single-line-mode nil
+   :multi-line-mode t)
+  "Scanner for # comments. Handles \"#\" strings")
+
 (defun strip-comments (string)
-  ;; regex kindly contributed by geekosaur@irc.freenode.net
-  (cl-ppcre:regex-replace
-   "^(([^#\"]|\"(([^\\\"]*\\.)*[^\\\"]*\"))+)#.*$"
+  "Strips the comments from the string"
+  (cl-ppcre:regex-replace-all
+   *comment-scanner*
    string
    "\\1"))
 
@@ -270,7 +278,9 @@
   (parse 'file-grammar string))
 
 (defun extract-lisp-structure (parsed-structure)
-
+  ;; Expecting parsed-structure to be two lists of lists. List 1
+  ;; will be the keys not belonging to a top-level value. List 2 is
+  ;; teh list of values belonging to top-level keys.
   (let ((table (make-hash-table
                 ;; Will be comparing strings for the keys
                 :test #'equal)))
@@ -287,7 +297,8 @@
     ;;
     ;; [h1.h2] key1 = t => h1.h2.key1
     (loop for header in (second parsed-structure)
-       do)
+       do
+         (format t "Header: ~a~&" header))
 
     ;; Pass 3
     ;; Collapse values from the (:type <stuff>) information.

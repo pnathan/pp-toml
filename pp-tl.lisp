@@ -17,6 +17,9 @@
    :parse-string
 
    ;; testing entry points
+
+   :extract-lisp-structure
+
    :not-special-case
    :datetime
    :whitespace
@@ -269,8 +272,8 @@
                        preamble
                        ;; interleaving
                        (* (and
-                           (+ keygroup)
-                           (+ keyvalue)
+                           keygroup
+                           (* keyvalue)
                            ))))
 
 (defun parse-string (string)
@@ -285,36 +288,76 @@
                 ;; Will be comparing strings for the keys
                 :test #'equal)))
 
-    ;;Pass 1: Get all unheadered keys into a hash table
+
+    ;;pass 1: get all unheadered keys into a hash table
     (loop for keyvalue in (first parsed-structure)
        do (setf (gethash (second keyvalue) table)
-                (third keyvalue)))
+                (process-value-data (third keyvalue))))
 
-    ;; Pass 2: Normalize headers into keyvalues.
+    ;; pass 2: normalize headers into keyvalues.
     ;;
-    ;; As partof this pass, duplicate keys are detected and an error
+    ;; as partof this pass, duplicate keys are detected and an error
     ;; is thrown
     ;;
     ;; [h1.h2] key1 = t => h1.h2.key1
     (loop for header in (second parsed-structure)
        do
-         (format t "Header: ~a~&" header))
 
-    ;; Pass 3
-    ;; Collapse values from the (:type <stuff>) information.
+         (assert (eq (caar header) :header))
+         (let ((keygroup-header (cadar header))
+               (section (cadr header)))
+           (format t "header: ~a~&" keygroup-header)
+           (unless section
+             (setf (gethash keygroup-header table) nil))
+           (loop for keyvalue in section do
+                (format t "keyvalue: ~a~&" keyvalue)
+                (assert (eq (first keyvalue) :keyvalue))
+                (let ((key
+                       ;; Format the key
+                       (format nil "~a.~a"
+                               keygroup-header
+                               (second keyvalue))))
+                  (multiple-value-bind (value gotten)
+                      (gethash key table)
+                    (declare (ignore value))
+                    ;; Duplicate value detection!
+                    (assert (not gotten) ))
+                  (setf (gethash key table)
+                       ;; collapse values from the (:type <stuff>) information.
+                       (process-value-data (third keyvalue)))))))
 
-    ;; Pass 3a.  Arrays are recursively collapsed. Internal values are
-    ;; collapsed. Heterogenously typed arrays are detected and
-    ;; condition raised. This allows us to use Common Lisp arrays.
+    ;; break!  at this point: we have a flat common lisp hash table,
+    ;; no duplicate keys. each value is a lisp value correctly
+    ;; transcribed from the toml.
 
-    ;; Pass 3b.  Non-arrays are collapsed using the internal value
-    ;; code above.
-
-    ;; Break!  At this point: we have a flat Common Lisp hash table,
-    ;; no duplicate keys. Each value is a Lisp value correctly
-    ;; transcribed from the TOML.
-
-    ;; Pass 4. Place the h1.h2.key2 into nested hash tables h1 => h2>
+    ;; pass 3. place the h1.h2.key2 into nested hash tables h1 => h2>
     ;; key2 => value and remove the h1.h2.key2 key.
 
     table))
+
+(defun process-value-data (value)
+  "`value` may be any of the standard toml value types: array,
+datetime, bool, number, or string. Of those, arrays are a special case:
+Supposing an array is encountered, process-value-data recurses upon the array.
+
+Toml does not support references  as of v0.1, and there for we can traverse arrays without cyles of references."
+  (alexandria:switch ((first value) :test #'eq )
+    (:array
+     (loop for ele in (second value)
+       collect (process-value-data ele)))
+    (:bool
+     (alexandria:switch ((second value))
+      (:true t)
+      (:false nil)
+      (t
+       (error "Unable to understand: ~a was thought to be a :BOOL must be :true or :false" (second value)))))
+    (:datetime
+     ;; The datetime is already parsed
+     (second value))
+    (:string
+     ;; Text is already parsed as well
+     (second value))
+    (:number
+     (second value))
+    (t
+     (error "Unable to understand: ~a; must be a legit pp-toml type" (first value)))))

@@ -15,7 +15,7 @@ deferred until someone gets bit *and* is angry enough to send a pull
 request fixing them.
 
 * Also of note is that at present I am not enforcing array
-homogenaity. Partly this is because of Postel's dictum, but partly
+homogeneity. Partly this is because of Postel's dictum, but partly
 because it might be more convient to have heterogenous lists. I may
 add a *strict* mode which throws errors here.
 

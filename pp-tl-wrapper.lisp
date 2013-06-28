@@ -1,6 +1,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Wrapper for BurntSushi's TOML tester.
-(load "pp-tl.lisp")
+(ql:quickload :pp-tl)
+(ql:quickload :yason)
 
 
 (defun read-standard-in ()
@@ -11,19 +12,18 @@
       until (eq i :eof)
       collect i)))
 
-(ql:quickload :yason)
+(defun burnt-sushi-ize (table)
+  "Fiddle the hash table to the spec found in
+https://github.com/BurntSushi/toml-test" table )
+
 (defun run-external-tests ()
 
   (let ((parsed-result
          (handler-case
-             (pp-toml:parse-string (read-standard-in))
+             (pp-toml:parse-toml (read-standard-in))
            (esrap:esrap-error () :parse-error))))
     ;; bail out crying
     (when (eq parsed-result
            :parse-error)
       (exit :code 1))
-
-    (format t "~a"
-            (yason:encode parsed-result))
-
-    ))
+            (yason:encode (burnt-sushi-ize parsed-result))))

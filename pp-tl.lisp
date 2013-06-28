@@ -11,43 +11,11 @@
 
 (defpackage :pp-toml
   (:use
-   :common-lisp)
+   :common-lisp
+   :esrap)
   (:export
-   ;; entry point for world
-   :parse-string
-
-   ;; testing entry points
-
-   :extract-lisp-structure
-
-   :not-special-case
-   :datetime
-   :whitespace
-   :alphanumericp
-   :string-char
-   :keygroup-char
-   :normal-key
-   :string
-   :number
-   :bool
-   :array-contents
-   :array
-   :value
-   :end-of-information
-   :keyvalue
-   :keygroup
-   :preamble
-   :file-grammar
-   :strip-comments))
+   #:parse-toml))
 (in-package :pp-toml)
-
-
-(ql:quickload :esrap)
-(ql:quickload '(:parse-number
-                :alexandria
-                :cl-ppcre
-                :local-time))
-(use-package :esrap)
 
 (defun not-doublequote (char)
   (not (eql #\" char)))
@@ -251,6 +219,17 @@
           (text name))))
 
 
+
+
+(defrule preamble (* keyvalue))
+
+(defrule file-grammar (and
+                       preamble
+                       ;; interleaving
+                       (* (and
+                           keygroup
+                           (* keyvalue)
+                           ))))
 (defparameter *comment-scanner*
   (cl-ppcre:create-scanner
    ;; initial regex kindly contributed by geekosaur@irc.freenode.net
@@ -266,19 +245,11 @@
    string
    "\\1"))
 
-(defrule preamble (* keyvalue))
-
-(defrule file-grammar (and
-                       preamble
-                       ;; interleaving
-                       (* (and
-                           keygroup
-                           (* keyvalue)
-                           ))))
-
 (defun parse-string (string)
   "Returns the toml parsed structure from `string` or :parse-error"
   (parse 'file-grammar string))
+
+;;; Semantic analysis tools below
 
 (defun extract-lisp-structure (parsed-structure)
   ;; Expecting parsed-structure to be two lists of lists. List 1
@@ -306,11 +277,12 @@
          (assert (eq (caar header) :header))
          (let ((keygroup-header (cadar header))
                (section (cadr header)))
-           (format t "header: ~a~&" keygroup-header)
+
            (unless section
-             (setf (gethash keygroup-header table) nil))
+             (setf (gethash keygroup-header table)
+                   (make-hash-table :test #'equal)))
+
            (loop for keyvalue in section do
-                (format t "keyvalue: ~a~&" keyvalue)
                 (assert (eq (first keyvalue) :keyvalue))
                 (let ((key
                        ;; Format the key
@@ -323,7 +295,8 @@
                     ;; Duplicate value detection!
                     (assert (not gotten) ))
                   (setf (gethash key table)
-                       ;; collapse values from the (:type <stuff>) information.
+                       ;; collapse values from the (:type <stuff>)
+                       ;; information.
                        (process-value-data (third keyvalue)))))))
 
     ;; break!  at this point: we have a flat common lisp hash table,
@@ -331,9 +304,10 @@
     ;; transcribed from the toml.
 
     ;; pass 3. place the h1.h2.key2 into nested hash tables h1 => h2>
-    ;; key2 => value and remove the h1.h2.key2 key.
+    ;; key2 => values; since we return the new table, we don't need to
+    ;; worry about nuking the old values.
+    (explode-hash-table table)))
 
-    table))
 
 (defun process-value-data (value)
   "`value` may be any of the standard toml value types: array,
@@ -350,7 +324,9 @@ Toml does not support references  as of v0.1, and there for we can traverse arra
       (:true t)
       (:false nil)
       (t
-       (error "Unable to understand: ~a was thought to be a :BOOL must be :true or :false" (second value)))))
+       (error
+        "Unable to understand: ~a was thought to be a :BOOL must be :true or :false"
+        (second value)))))
     (:datetime
      ;; The datetime is already parsed
      (second value))
@@ -360,4 +336,51 @@ Toml does not support references  as of v0.1, and there for we can traverse arra
     (:number
      (second value))
     (t
-     (error "Unable to understand: ~a; must be a legit pp-toml type" (first value)))))
+     (error
+      "Unable to understand: ~a; must be a legit pp-toml type"
+      (first value)))))
+
+(defun key-p (key table)
+  "Does `key` exist in `table?"
+  (multiple-value-bind
+        (value found-p)
+      (gethash key table)
+    (declare (ignore value))
+    found-p))
+
+(defun make-nested-hash (table key-list value)
+
+  (let ((key (car key-list)))
+    (cond
+      ;; are we at the end of the key list?
+      ((not (cdr key-list))
+       (setf (gethash key table) value))
+      (t
+       (if (not (key-p key table))
+           (progn
+             (setf (gethash key table)
+                   (make-hash-table :test #'equal))))
+
+       (make-nested-hash (gethash key table) (cdr key-list) value)))))
+
+;; TODO: turn into a flet for explode-hash-table
+(defun splode-y (table splitter key value)
+  (let ((key-list
+         (split-sequence:split-sequence splitter key)))
+    (make-nested-hash table key-list value)))
+
+(defun explode-hash-table (table)
+  (let ((new-table (make-hash-table :test #'equal)))
+    (maphash
+     #'(lambda (k v)
+         (splode-y new-table #\. k v)
+         )
+     table)
+    new-table))
+
+
+(defun parse-toml (string)
+  "Parse a TOML string, returning a hash table comparable by EQUAL"
+  (extract-lisp-structure
+   (parse-string
+    (strip-comments string))))

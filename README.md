@@ -16,7 +16,7 @@ request fixing them.
 
 * Also of note is that at present I am not enforcing array
 homogeneity. Partly this is because of Postel's dictum, but partly
-because it might be more convient to have heterogenous lists. I may
+because it might be more convenient to have heterogenous lists. I may
 add a *strict* mode which throws errors here.
 
 * Unicode support may have some issues. It *should* work, but Unicode

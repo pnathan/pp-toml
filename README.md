@@ -1,9 +1,7 @@
 Paul's Parser for Tom's Own Minimal Language
 ====
 
-TOML is a language that needs to exist.
-
-(https://github.com/mojombo/toml)[https://github.com/mojombo/toml]
+[TOML](https://github.com/mojombo/toml) is a language that needs to exist.
 
 This is a Common Lisp parser for TOML v0.1.0. Since Tom thought it'd
 be a good idea to put his name on the language, I'm putting my name on

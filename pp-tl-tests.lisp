@@ -82,9 +82,9 @@ billy = 1
   (is (esrap:parse 'preamble "thing2 = \"other\nthing\"
 "))
 
-  (is (parse-file "thing2 = \"other\nthing\"
+  (is (parse-string "thing2 = \"other\nthing\"
 "))
-  (is (parse-file "bio = \"GitHub Cofounder & CEO\nLikes tater tots and beer.\"
+  (is (parse-string "bio = \"GitHub Cofounder & CEO\nLikes tater tots and beer.\"
 dob=1979-05-27T07:32:00Z
 dob2 = 2013-10-22T07:32:00Z
 "

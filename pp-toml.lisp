@@ -1,7 +1,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; paul's parser for tom's own minimal language
 ;;;;
-;;;; (C) 2013 Paul Nathan
+;;;; (C) 2013, 2014 Paul Nathan
 ;;;; License: LLGPL (http://opensource.franz.com/preamble.html)
 
 
@@ -14,7 +14,17 @@
    :common-lisp
    :esrap)
   (:export
-   #:parse-toml))
+   #:parse-toml
+
+   #:parse-string
+   #:strip-comments
+
+   :value
+   :datetime
+   :preamble
+   :keyvalue
+   :keygroup))
+
 (in-package :pp-toml)
 
 (defun not-doublequote (char)
@@ -64,6 +74,7 @@
 (defrule string-char
     (or (not-doublequote character) (and #\\ #\')))
 
+;; Keygroups are known as tables in v0.2.0
 (defrule keygroup-char
     (or (not-bracket character) #\. ))
 
@@ -105,7 +116,8 @@
                          (string repl)))))
     ;; alpha sorted
     (tr "\\b" #\Backspace)
-    (tr "\\f" #\Form)
+    ;; ABCL does not include #\Form
+    #-abcl(tr "\\f" #\Form)
     (tr "\\n" #\Linefeed)
     (tr "\\r" #\Return)
     (tr "\\t" #\Tab)
@@ -211,6 +223,7 @@
      :keyvalue
      key value)))
 
+;; aka tables in 0.2.0
 (defrule keygroup
     (and (? whitespace) #\[ (+ keygroup-char) #\] (? whitespace))
   (:destructure (_1 _2 name _3 _4)
@@ -373,14 +386,19 @@ Toml does not support references  as of v0.1, and there for we can traverse arra
   (let ((new-table (make-hash-table :test #'equal)))
     (maphash
      #'(lambda (k v)
-         (splode-y new-table #\. k v)
-         )
+         (splode-y new-table #\. k v))
      table)
     new-table))
 
 
-(defun parse-toml (string)
-  "Parse a TOML string, returning a hash table comparable by EQUAL"
-  (extract-lisp-structure
-   (parse-string
-    (strip-comments string))))
+(defun parse-toml (string &key (strict nil))
+  "Parse a TOML `string`, returning a hash table comparable by EQUAL.
+
+`strict` is not supported at present.
+"
+  (let ((postfix-newlined-string
+          (cl-ppcre:regex-replace-all "\\b\\s*$" string
+                                      (concatenate 'string '(#\Newline)))))
+   (extract-lisp-structure
+    (parse-string
+     (strip-comments postfix-newlined-string)))))

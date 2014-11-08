@@ -1,7 +1,3 @@
-(ql:quickload :fiveam)
-(use-package :fiveam)
-(ql:quickload :esrap)
-(use-package :pp-toml)
 (defpackage :pp-toml-tests
   (:use :common-lisp
         :pp-toml
@@ -9,7 +5,7 @@
   (:export :run-tests))
 
 (in-package :pp-toml-tests)
-
+(use-package :pp-toml)
 
 (def-suite pp-toml-suite
   :description "The tests.")
@@ -82,9 +78,9 @@ billy = 1
   (is (esrap:parse 'preamble "thing2 = \"other\nthing\"
 "))
 
-  (is (parse-string "thing2 = \"other\nthing\"
+  (is (pp-toml:parse-string "thing2 = \"other\nthing\"
 "))
-  (is (parse-string "bio = \"GitHub Cofounder & CEO\nLikes tater tots and beer.\"
+  (is (pp-toml:parse-string "bio = \"GitHub Cofounder & CEO\nLikes tater tots and beer.\"
 dob=1979-05-27T07:32:00Z
 dob2 = 2013-10-22T07:32:00Z
 "
@@ -167,7 +163,7 @@ dob2 = 2013-10-22T07:32:00Z
 (test parse-tests
 
   (is
-   (parse-string "title = \"TOML Example\"
+   (pp-toml:parse-string "title = \"TOML Example\"
 [foo]
 baffle = 1
 binky=true
@@ -176,7 +172,7 @@ blaq=\"beautiful\"
 
 
 
-(parse-string
+(pp-toml:parse-string
 "
 title = \"TOML Example\"
 

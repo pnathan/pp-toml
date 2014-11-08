@@ -1,35 +1,85 @@
 Paul's Parser for Tom's Own Minimal Language
 ====
 
-[TOML](https://github.com/mojombo/toml) is a language that needs to exist.
+Common Lisp [TOML](https://github.com/mojombo/toml) parser.
 
-This is a Common Lisp parser for TOML v0.1.0. Since Tom thought it'd
-be a good idea to put his name on the language, I'm putting my name on
-this parser. So there.
+Compliance notes
+---
 
-A few notes.
+* Supports the TOML v0.1.0 with the following exceptions:
 
-* I've decided to not focus on full compliance for now. In particular,
-bizzare complications arising from escaping quote & comment syntax are
-deferred until someone gets bit *and* is angry enough to send a pull
-request fixing them.
+* Complications arising from escaping quote & comment syntax are known
+and deferred until someone gets bit *and* is angry enough to send a
+pull request fixing them.
 
-* Also of note is that at present I am not enforcing array
-homogeneity. Partly this is because of Postel's dictum, but partly
-because it might be more convenient to have heterogenous lists. I may
-add a *strict* mode which throws errors here.
+* Not enforcing array homogeneity. Partly this is because of Postel's
+dictum, but partly because it might be more convenient to have
+heterogenous lists. Future work - might add a *strict* mode which
+throws errors here.
 
 * Unicode support may have some issues. It *should* work, but Unicode
 on Common Lisp is sometimes dependant on your system's
-configuration. Testing should be done.
+configuration. Testing should be done before rolling your work to
+production.
 
 * Common Lisp is pretty good with numbers. Therefore, instead of
 manually differentiating between floats and integers, pp-toml calls
-them NUMBERS and lets Lisp take care of the rest.
+them NUMBERS and lets your Lisp take care of the rest. Again, test
+before rolling to production.
 
+Testing
+---
 
-Further comments.
+To run the tests, do this:
 
-In terms of testing, the test suite is somewhat rotted and needs
-work. I plan to make another pass on it and get it ready for Quicklisp
-& cl-test-grid.
+```
+* (ql:quickload :pp-toml-tests)
+To load "pp-toml-tests":
+  Load 1 ASDF system:
+    pp-toml-tests
+; Loading "pp-toml-tests"
+; ... SNIP ...
+* (pp-toml-tests:run-tests)
+
+Running test suite PP-TOML-SUITE
+ Running test KEYGROUP-TESTS ..
+ Running test KEYVALUE-TESTS ..
+ Running test PREAMBLE-TESTS .
+ Running test COMMENT-TESTS ......
+ Running test MULTI-LINE-TESTS ...
+ Running test DATETIME-TESTS ...
+ Running test VALUE-TESTS .................f.#(4); #(8)
+.
+ Running test PARSE-TESTS .
+ Did 38 checks.
+    Pass: 37 (97%)
+    Skip: 0 ( 0%)
+    Fail: 1 ( 2%)
+
+ Failure Details:
+ --------------------------------
+ VALUE-TESTS []:
+
+(ESRAP:PARSE 'VALUE "\"XX\\/YY\"")
+
+ evaluated to
+
+(:STRING "XX\\/YY")
+
+ which is not
+
+EQUALP
+
+ to
+
+(:STRING "XX/YY")
+
+..
+ --------------------------------
+```
+
+Remarks
+---
+
+Since Tom thought it'd be a good idea to put his name on the language,
+I'm putting my name on this parser.

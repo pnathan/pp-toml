@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Wrapper for BurntSushi's TOML tester.
-(ql:quickload :pp-tl)
+(ql:quickload :pp-toml)
 (ql:quickload :yason)
 
 

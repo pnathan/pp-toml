@@ -1,10 +1,10 @@
-(asdf:defsystem #:pp-tl
+(asdf:defsystem #:pp-toml
   :depends-on ( #:esrap
                 #:parse-number
                 #:alexandria #:split-sequence #:cl-ppcre
                 #:local-time)
-  :components ((:file "pp-tl"))
-  :name "pp-tl"
+  :components ((:file "pp-toml"))
+  :name "pp-toml"
   :version "1.0"
   :maintainer "Paul Nathan"
   :author "Paul Nathan"

@@ -3,6 +3,8 @@ Paul's Parser for Tom's Own Minimal Language
 
 Common Lisp [TOML](https://github.com/mojombo/toml) parser.
 
+[![Build Status](https://travis-ci.org/pnathan/pp-toml.svg?branch=master)](https://travis-ci.org/pnathan/pp-toml)
+
 Compliance notes
 ---
 

@@ -3,6 +3,6 @@ before_script:
         - tar xjf sbcl-1.2.6-x86-64-linux-binary.tar.bz2
         - cd sbcl-1.2.6-x86-64-linux/ && sudo bash install.sh
         - curl -O -L http://beta.quicklisp.org/quicklisp.lisp
-        - sbcl --load quicklisp.lisp --eval '(quicklisp-quickstart:install)'
+        - sbcl --load quicklisp.lisp --eval '(quicklisp-quickstart:install)' --eval '(quit)'
 script:
         - sbcl --script run-sbcl-tests.lisp

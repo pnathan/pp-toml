@@ -8,7 +8,7 @@ Common Lisp [TOML](https://github.com/mojombo/toml) parser.
 Compliance notes
 ---
 
-* Supports the TOML v0.1.0 with the following exceptions:
+* Supports the TOML v0.1.0 spec with the following exceptions:
 
 * Complications arising from escaping quote & comment syntax are known
 and deferred until someone gets bit *and* is angry enough to send a
@@ -35,50 +35,18 @@ Testing
 To run the tests, do this:
 
 ```
-* (ql:quickload :pp-toml-tests)
-To load "pp-toml-tests":
-  Load 1 ASDF system:
-    pp-toml-tests
-; Loading "pp-toml-tests"
-; ... SNIP ...
-* (pp-toml-tests:run-tests)
-
-Running test suite PP-TOML-SUITE
- Running test KEYGROUP-TESTS ..
- Running test KEYVALUE-TESTS ..
- Running test PREAMBLE-TESTS .
- Running test COMMENT-TESTS ......
- Running test MULTI-LINE-TESTS ...
- Running test DATETIME-TESTS ...
- Running test VALUE-TESTS .................f.#(4); #(8)
-.
- Running test PARSE-TESTS .
- Did 38 checks.
-    Pass: 37 (97%)
-    Skip: 0 ( 0%)
-    Fail: 1 ( 2%)
-
- Failure Details:
- --------------------------------
- VALUE-TESTS []:
-
-(ESRAP:PARSE 'VALUE "\"XX\\/YY\"")
-
- evaluated to
-
-(:STRING "XX\\/YY")
-
- which is not
-
-EQUALP
-
- to
-
-(:STRING "XX/YY")
-
-..
- --------------------------------
+ sbcl --script run-sbcl-tests.lisp
 ```
+
+Which will produce a test report.
+
+Contributions
+---
+
+Gratefully accepted. Please add test cases for bug reports you fix or
+features you add.
+
+License is LLGPL.
 
 Remarks
 ---

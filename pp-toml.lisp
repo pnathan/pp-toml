@@ -14,7 +14,8 @@
 (defpackage :pp-toml
   (:use
    :common-lisp
-   :esrap)
+   :esrap
+   :generic-comparability)
   (:export
    #:parse-toml
 
@@ -408,9 +409,14 @@ Toml does not support references  as of v0.1, and there for we can traverse arra
 
 `strict` is not supported at present.
 "
+  ;; not supported
+  (declare (ignore strict))
+
   (let ((postfix-newlined-string
           (cl-ppcre:regex-replace-all "\\b\\s*$" string
                                       (concatenate 'string '(#\Newline)))))
-   (extract-lisp-structure
-    (parse-string
-     (strip-comments postfix-newlined-string)))))
+   (let ((cleaned-string (strip-comments postfix-newlined-string)))
+     (if (cl-ppcre:scan "^\\s*$" cleaned-string)
+         (make-hash-table :test #'equal)
+         (extract-lisp-structure
+          (parse-string cleaned-string))))))

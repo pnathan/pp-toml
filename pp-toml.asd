@@ -1,11 +1,14 @@
 (asdf:defsystem #:pp-toml
-  :depends-on ( #:esrap
-                #:parse-number
-                #:alexandria #:split-sequence #:cl-ppcre
-                #:local-time)
+  :depends-on (#:alexandria
+               #:cl-ppcre
+               #:generic-comparability
+               #:local-time
+               #:parse-number
+               #:split-sequence
+               #:esrap)
   :components ((:file "pp-toml"))
   :name "pp-toml"
-  :version "1.0"
+  :version "1.0.1"
   :maintainer "Paul Nathan <pnathan@alumni.uidaho.edu>"
   :author "Paul Nathan <pnathan@alumni.uidaho.edu>"
   :licence "LLGPL"

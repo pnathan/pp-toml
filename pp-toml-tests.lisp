@@ -1,7 +1,8 @@
 (defpackage :pp-toml-tests
   (:use :common-lisp
         :pp-toml
-        :fiveam)
+        :fiveam
+        :generic-comparability)
   (:export :run-tests))
 
 (in-package :pp-toml-tests)
@@ -164,7 +165,6 @@ dob2 = 2013-10-22T07:32:00Z
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (test parse-tests
-
   (is
    (pp-toml:parse-string "title = \"TOML Example\"
 [foo]
@@ -202,3 +202,14 @@ enabled = true
   ip = \"10.0.0.2\"
   dc = \"eqdc10\"
 "))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(test top-level-tests
+      (is (equals (pp-toml:parse-toml " ")
+                  (make-hash-table :test #'equal)))
+      (is (equals (pp-toml:parse-toml "# fooo ")
+                  (make-hash-table :test #'equal)))
+      (is (equals (pp-toml:parse-toml "# fooo
+
+# bar ")
+                  (make-hash-table :test #'equal))))

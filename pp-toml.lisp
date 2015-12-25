@@ -269,7 +269,8 @@
      ;; interleaving
      (* (and
          keygroup
-         (* keyvalue)))))
+         (* keyvalue)))
+     (? whitespace)))
 
 (defun parse-string (string)
   "Returns the toml parsed structure from `string` or :parse-error"

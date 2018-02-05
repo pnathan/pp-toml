@@ -118,10 +118,16 @@
 (defrule 2-integers
     (and integer integer ) )
 
+(defrule time-secfrac
+    (and "." (+ integer)))
+
+(defrule time-numoffset
+    (and (or "+" "-") 2-integers ":" 2-integers))
+
 ;;1979-05-27T07:32:00Z
 (defrule datetime
     (and 4-integers #\- 2-integers #\- 2-integers #\T
-         2-integers #\: 2-integers #\: 2-integers #\Z)
+         2-integers #\: 2-integers #\: 2-integers (? time-secfrac) (or #\Z time-numoffset))
   (:lambda (list)
     (list
      :datetime

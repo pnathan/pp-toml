@@ -98,7 +98,10 @@ dob2 = 2013-10-22T07:32:00Z
 
   (is
    (esrap:parse 'keyvalue "dt = 1981-05-27T07:32:00Z
-")))
+"))
+  (is (esrap:parse 'datetime "1979-05-27T00:32:00-07:00"))
+  (is (esrap:parse 'datetime "1979-05-27T00:32:00.999999-07:00"))
+)
 (defun collect (&rest chars)
   (format nil "~{~c~}" chars))
 

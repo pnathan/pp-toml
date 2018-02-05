@@ -161,7 +161,10 @@ dob2 = 2013-10-22T07:32:00Z
   (is (equalp (list
                :string
                (collect #\X #\X (code-char 3456) #\Y #\Y))
-       (esrap:parse 'value "\"XX\\u3456YY\""))))
+       (esrap:parse 'value "\"XX\\u3456YY\"")))
+
+  (is (equal '(:string "abcd") (esrap:parse 'value "'abcd'")))
+  (is (equal '(:string "ab\"cd") (esrap:parse 'value "'ab\"cd'"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (test parse-tests

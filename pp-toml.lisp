@@ -169,6 +169,11 @@
       (transliterate-unicode
        (text string))))))
 
+(defrule literal-string
+    (and #\' (* (not (or #\newline #\'))) #\')
+  (:destructure (q1 characters q2)
+   (declare (ignore q1 q2))
+   (list :string (coerce characters 'string))))
 
 (defrule number
     (and (? "-" ) (and
@@ -230,7 +235,8 @@
      datetime
      bool
      number
-     string))
+     string
+     literal-string))
 
 (defrule end-of-information
     (and (* (or #\Space #\tab))

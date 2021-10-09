@@ -13,7 +13,7 @@
                 )
   :components ((:file "pp-toml-tests"))
   :name "pp-toml-tests"
-  :version "1.0"
+  :version "1.0.1"
   :maintainer "Paul Nathan"
   :author "Paul Nathan"
   :licence "LLGPL"

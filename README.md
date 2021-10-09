@@ -1,9 +1,14 @@
-Paul's Parser for Tom's Own Minimal Language
+Paul's Parser for Tom's Own Minimal Language (0.1.0)
 ====
 
 Common Lisp [TOML](https://github.com/mojombo/toml) parser.
 
 [![Build Status](https://travis-ci.org/pnathan/pp-toml.svg?branch=master)](https://travis-ci.org/pnathan/pp-toml)
+
+Needs
+---
+
+The library needs to be brought up to 1.0.0 spec.
 
 Compliance notes
 ---

@@ -8,7 +8,7 @@
 ;;;;
 ;;;; Uses esrap for the parsing heavy lifting. Some errors may look esrapy.
 ;;;;
-;;;; (C) 2013, 2014 Paul Nathan
+;;;; (C) 2013-2021 Paul Nathan & contributors
 ;;;; License: LLGPL (http://opensource.franz.com/preamble.html)
 
 (defpackage :pp-toml
@@ -98,8 +98,8 @@
                          (string repl)))))
     ;; alpha sorted
     (tr "\\b" #\Backspace)
-    ;; ABCL does not include #\Form
-    #-abcl(tr "\\f" #\Form)
+    ;; ABCL, ECL do not include #\Form
+    #-(or abcl ecl)(tr "\\f" #\Form)
     (tr "\\n" #\Linefeed)
     (tr "\\r" #\Return)
     (tr "\\t" #\Tab)

@@ -98,8 +98,13 @@
                          (string repl)))))
     ;; alpha sorted
     (tr "\\b" #\Backspace)
-    ;; ABCL, ECL do not include #\Form
-    #-(or abcl ecl)(tr "\\f" #\Form)
+
+    ;; Not all Lisps have the #\Form character
+    #+#.(cl:if (cl:ignore-errors (cl:read-from-string "#\\Form"))
+               '(and)
+               '(or))
+    (tr "\\f" #\Form)
+
     (tr "\\n" #\Linefeed)
     (tr "\\r" #\Return)
     (tr "\\t" #\Tab)
